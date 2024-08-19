@@ -1,5 +1,5 @@
 {
-  "name": "EmChat",
+  "name": "Twitch Chat Overlay",
   "private": true,
   "scripts": {
     "build": "gridsome build",

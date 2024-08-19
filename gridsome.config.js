@@ -5,7 +5,7 @@
 // To restart press CTRL + C in terminal and run `gridsome develop`
 
 module.exports = {
-  siteName: 'EmChat',
+  siteName: 'Twitch Chat Overlay',
   plugins: [],
   siteUrl: 'https://epicnesstwo.github.io',
   pathPrefix: '/emchat',

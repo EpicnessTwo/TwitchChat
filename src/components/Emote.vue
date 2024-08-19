@@ -1,5 +1,5 @@
 <template>
-  <img :src="emoteUrl" :alt="alt" class="emote inline h-8 w-auto" />
+  <img :src="emoteUrl" :alt="alt" class="emote inline h-8 min-w-8 w-auto" />
 </template>
 
 <script setup>

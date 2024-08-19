@@ -1,79 +1,38 @@
 <template>
-  <div class="chat-message bg-white px-6 py-4 pb-6 mt-12 rounded-xl relative" :class="{
+  <div class="chat-message mt-12 ml-5 relative" :class="{
     'rainbow': messageFlare === 'rainbow',
     'w-full': !isSingleEmote,
     'text-center': isSingleEmote,
   }" :style="{
     transform: `rotate(${randomRotation()}deg)`
   }">
-    <div class="absolute h-full w-full top-0 left-0 pointer-events-none" :class="flareColour">
-      <Flower
-          :classes="{
-          'w-8': true,
-          'h-8': true,
-          'top-1/2': true,
-          '-mt-4': true,
-          'block': true,
-          'absolute': true,
-          'rounded-full': true,
-          '-left-4': true,
-        }"
-      ></Flower>
-      <FlowerLeft
-          :classes="{
-            'w-20': true,
-            'h-20': true,
-            'top-1/2': true,
-            '-mt-10': true,
-            'block': true,
-            'absolute': true,
-            'rounded-full': true,
-            '-left-10': true,
-          }"
-          v-if="props.tags.subscriber === true"
-      ></FlowerLeft>
-      <Flower
-          :classes="{
-          'w-8': true,
-          'h-8': true,
-          'top-1/2': true,
-          '-mt-4': true,
-          'block': true,
-          'absolute': true,
-          'rounded-full': true,
-          '-right-4': true,
-        }"
-      ></Flower>
-    </div>
-    <div class="user -mt-9 mb-4 text-center font-bold">
-      <span
-          class="username py-1.5 px-4 text-sm rounded-lg relative"
-          :class="messageAccent"
-      >
-        <span class="absolute right-full top-0 badges mr-1 block w-full text-right" :class="flareColour">
-          <Sub v-if="userLevel === 'sub'"></Sub>
-          <Vip v-if="userLevel === 'vip'"></Vip>
-          <Mod v-if="userLevel === 'mod'"></Mod>
-          <Host v-if="userLevel === 'host'"></Host>
+    <div class="header text-left px-5 py-1 absolute h-full w-full -top-8 -left-5 rounded-xl" :class="messageAccent">
+      <div class="catear_left" :class="messageAccent"></div>
+      <div class="catear_right" :class="messageAccent"></div>
+        <span class="font-medium">{{ username }}</span>
+        <span v-if="props.pronouns.pronouns" class="text-xs">
+          ({{ props.pronouns.pronouns }})
         </span>
-        <EpicKitty v-if="isEpicKitty"></EpicKitty>
-        {{ username }}
-      </span>
     </div>
-    <p class="text-gray-800">
-      <EmoteSpam v-if="props.tags['animation-id'] === 'simmer'"></EmoteSpam>
-      <template v-if="isSingleEmote">
-        <component :is="Emote" :id="parsedMessage[0].id" :alt="parsedMessage[0].alt" :emote-source="parsedMessage[0].emoteSource" class="!h-32 w-auto"></component>
-      </template>
-      <template v-else>
-        <span v-for="part in parsedMessage" :key="part.key">
-          <component v-if="part.type === 'emote'" :is="Emote" :id="part.id" :alt="part.alt" :emote-source="part.emoteSource"></component>
-          <span v-else>{{ part.text }}</span>
-          <span class="inline-block w-1"> </span>
-        </span>
-      </template>
-    </p>
-
+    <div
+        class="message relative bg-white rounded-xl rounded-b-xl overflow-hidden"
+        :class="{
+          'py-3 px-5': !isSingleEmote,
+          'text-center': isSingleEmote,
+        }"
+    >
+        <EmoteSpam v-if="props.tags['animation-id'] === 'simmer'"></EmoteSpam>
+        <template v-if="isSingleEmote">
+          <component :is="Emote" :id="parsedMessage[0].id" :alt="parsedMessage[0].alt" :emote-source="parsedMessage[0].emoteSource" class="!h-32 !min-w-32 w-auto"></component>
+        </template>
+        <template v-else>
+          <span v-for="part in parsedMessage" :key="part.key">
+            <component v-if="part.type === 'emote'" :is="Emote" :id="part.id" :alt="part.alt" :emote-source="part.emoteSource"></component>
+            <span v-else>{{ part.text }}</span>
+            <span class="inline-block w-1"> </span>
+          </span>
+        </template>
+    </div>
   </div>
 </template>
 
@@ -111,32 +70,25 @@ const props = defineProps({
     type: Object,
     required: false,
     default: () => ({})
+  },
+  pronouns: {
+    type: [Object, Boolean],
+    required: false,
+    default: false
   }
 });
 
-let messageAccent = 'bg-yellow-200 text-black';
-let flareColour = 'text-yellow-300';
-let messageFlare = '';
-let userLevel = '';
-let isEpicKitty = false;
-
-if (props.tags['user-id'] === props.tags['room-id']) {
-  messageAccent = 'bg-red-500 text-white';
-  flareColour = 'text-red-500';
-  userLevel = 'host';
-} else if (props.tags.mod === true) {
-  messageAccent = 'bg-teal-400 text-white';
-  flareColour = 'text-teal-300';
-  userLevel = 'mod';
-} else if (props.tags.vip === true) {
-  messageAccent = 'bg-purple-400 text-white';
-  flareColour = 'text-purple-400';
-  userLevel = 'vip';
-} else if (props.tags.subscriber === true) {
-  messageAccent = 'bg-pink-400 text-white';
-  flareColour = 'text-pink-400';
-  userLevel = 'sub';
+// Calculate the luminance of props.tags.color to determine text colour, setting a var called textColour
+let textColour = 'text-white';
+if (props.tags.color) {
+  const hex = props.tags.color.replace('#', '');
+  textColour = ((0.299 * parseInt(hex.substring(0, 2), 16) + 0.587 * parseInt(hex.substring(2, 4), 16) + 0.114 * parseInt(hex.substring(4, 6), 16)) / 255) > 0.5 ? 'text-black' : 'text-white';
 }
+
+
+let messageAccent = 'bg-[' + ((props.tags.color === '#FFFFFF' ? '#D946EF' : props.tags.color) ?? '#D946EF') + '] ' + textColour;
+let messageFlare = '';
+let isEpicKitty = false;
 
 if (props.tags['display-name'] === 'EpicKittyXP') {
   isEpicKitty = true;
@@ -289,4 +241,41 @@ function randomRotation() {
     background-position: 0 0;
   }
 }
+
+@keyframes init {
+  0%, 50% {
+    top: -30px;
+    left: -20px;
+  }
+  100% {
+    top: 0;
+    left: 0;
+  }
+}
+
+.chat-message .message {
+  animation: init 1s ease;
+  animation-iteration-count: 1;
+}
+
+/*
+.catear_left,
+.catear_right {
+  content: "";
+  position: absolute;
+  display: block;
+  width: 40px;
+  height: 100px;
+  z-index: -1;
+  border-radius: 100%;
+  top: -20px;
+}
+
+.catear_left {
+  left: 15px;
+}
+
+.catear_right {
+  right: 15px;
+}*/
 </style>

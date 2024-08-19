@@ -14,6 +14,7 @@
             :stvEmotes="message.stvEmotes"
             :tags="message.tags"
             :tilt="easterEggs.tilt"
+            :pronouns="message.pronouns"
             v-if="message.type === 'message'"
             v-once
         ></ChatMessage>
@@ -44,13 +45,14 @@ const props = defineProps({
 });
 
 const messages = ref([]);
+const pronouns = ref({});
 const vips = ref([]);
 const chatBox = ref(null);
 let stvEmotes = {};
 const pruneLength = 20;
 const easterEggs = {
   'flip': false,
-  'tilt': true,
+  'tilt': false,
   'party': false,
   'debugBackground': false,
 };
@@ -189,8 +191,6 @@ const initializeChat = () => {
       }
     }
 
-    if (commandRan) return;
-
     // truncate username to max of 20 characters and add ellipsis if necessary
     tags['display-name'] = tags['display-name'].length > 20 ? tags['display-name'].substring(0, 20) + '...' : tags['display-name'];
 
@@ -214,6 +214,7 @@ const initializeChat = () => {
     // EpicKitty
     message = message.replace(/\uDB40/g, '').replace(/\uDC00/g, '').trimEnd();
 
+    const pronouns = fetchPronouns(tags['user-id'], tags['display-name']);
 
     messages.value.push({
       type: 'message',
@@ -222,7 +223,8 @@ const initializeChat = () => {
       message: message,
       hexMessage: hexMessage,
       tags: tags,
-      stvEmotes: filteredStvEmotes
+      stvEmotes: filteredStvEmotes,
+      pronouns: pronouns,
     });
 
     if (messages.value.length >= pruneLength) {
@@ -338,6 +340,94 @@ const initializeStvEmotes = () => {
   });
 };
 
+const fetchPronouns = (twitchId, twitchUsername) => {
+  if (!pronouns.value[twitchUsername]) {
+    pronouns.value[twitchUsername] = {};
+    try {
+      fetch(`https://pronoundb.org/api/v2/lookup?platform=twitch&ids=${twitchId}`).then(response => response.json()).then(data => {
+        pronouns.value[twitchUsername].pronouns = data[twitchId].sets.en.join('/');
+        if (data[twitchId].pronouns.decoration) {
+          pronouns.value[twitchUsername].decoration = data[twitchId].pronouns.decoration;
+        }
+      }).catch(() => {
+        fetch(`https://api.pronouns.alejo.io/v1/users/${twitchUsername}`).then(response => response.json()).then(data => {
+          const pp1 = pronounParser(data.pronoun_id, 0);
+          let pp2 = pronounParser(data.pronoun_id, 1);
+          if (data.alt_pronoun_id) {
+            pp2 = pronounParser(data.alt_pronoun_id, 1);
+          }
+
+          pronouns.value[twitchUsername].pronouns = `${pp1}/${pp2}`;
+        });
+      });
+    } catch (e) {
+      console.warn(e);
+      return pronouns.value[twitchUsername];
+    }
+  }
+
+  return pronouns.value[twitchUsername];
+};
+
+const pronounParser = (pid, part) => {
+  const pronouns = {
+    'aeaer': {
+      0: 'ae',
+      1: 'aer',
+    },
+    'any': {
+      0: 'any',
+      1: 'any',
+    },
+    'een': {
+      0: 'e',
+      1: 'em',
+    },
+    'faefaer': {
+      0: 'fae',
+      1: 'faer',
+    },
+    'hehim': {
+      0: 'he',
+      1: 'him',
+    },
+    'itit': {
+      0: 'it',
+      1: 'it',
+    },
+    'other': {
+      0: 'other',
+      1: 'other',
+    },
+    'perper': {
+      0: 'per',
+      1: 'per',
+    },
+    'sheher': {
+      0: 'she',
+      1: 'her',
+    },
+    'theythem': {
+      0: 'they',
+      1: 'them',
+    },
+    'vever': {
+      0: 've',
+      1: 'ver',
+    },
+    'xexem': {
+      0: 'xe',
+      1: 'xem',
+    },
+    'ziehir': {
+      0: 'zie',
+      1: 'hir',
+    },
+  };
+
+  return pronouns[pid][part];
+};
+
 const scrollToBottom = () => {
   if (chatBox.value) {
     chatBox.value.scrollTop = chatBox.value.scrollHeight
@@ -359,7 +449,7 @@ onMounted(() => {
   transition: all .5s;
 }
 .list-enter, .list-leave-to {
-  transform: scale(0.8) translateY(30px);
+  transform: scale(0.4) translateX(600px);
   opacity: 0;
 }
 

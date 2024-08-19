@@ -1,42 +1,22 @@
 <template>
-  <div class="chat-message bg-white px-5 py-4 mt-12 mx-4 rounded-xl relative max-w-full" :class="fancy" :style="{
+  <div class="chat-notice mt-10 ml-5 relative w-full" :class="fancy" :style="{
     transform: `rotate(${randomRotation()}deg)`
   }">
-    <Flower
-        :classes="{
-          'w-8': true,
-          'h-8': true,
-          'top-1/2': true,
-          '-mt-4': true,
-          'block': true,
-          'absolute': true,
-          'rounded-full': true,
-          '-left-4': true,
-          'text-teal-300': true,
-        }"
-    ></Flower>
-    <Flower
-        :classes="{
-          'w-8': true,
-          'h-8': true,
-          'top-1/2': true,
-          '-mt-4': true,
-          'block': true,
-          'absolute': true,
-          'rounded-full': true,
-          '-right-4': true,
-          'text-teal-300': true,
-        }"
-    ></Flower>
-    <p class="text-gray-800 text-center font-bold">
-      {{ username }} {{ message }}
-    </p>
+    <div class="header text-left px-5 py-1 absolute h-full w-full -top-8 -left-5 rounded-xl bg-purple-600 text-white">
+      {{ username }}
+    </div>
+    <div class="message relative bg-white rounded-xl rounded-b-xl overflow-hidden py-3 px-5">
+      <p class="text-gray-800 text-center font-bold">
+        {{ username }} {{ message }}
+      </p>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { defineProps, computed } from 'vue';
 import Flower from "./Flares/flower.vue";
+import EpicKitty from "./Badges/EpicKitty.vue";
 
 const props = defineProps({
   username: {
@@ -103,5 +83,21 @@ function randomRotation() {
 
 .cheer:after {
   background: #E89FEE;
+}
+
+@keyframes init {
+  0%, 50% {
+    top: -30px;
+    left: -20px;
+  }
+  100% {
+    top: 0;
+    left: 0;
+  }
+}
+
+.chat-notice .message {
+  animation: init 1s ease;
+  animation-iteration-count: 1;
 }
 </style>
