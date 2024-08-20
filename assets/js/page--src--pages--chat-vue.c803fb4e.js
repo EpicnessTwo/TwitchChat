@@ -1,0 +1,1 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[6],{q1WW:function(t,e,n){"use strict";n.r(e);var s=n("kCd/"),a={__name:"Chat",setup:t=>({__sfc:!0,Chatbox:s.a})},o=n("KHd+"),u=Object(o.a)(a,(function(){return(0,this._self._c)(this._self._setupProxy.Chatbox,{attrs:{channel:"grazedpoem"}})}),[],!1,null,null,null);e.default=u.exports}}]);
